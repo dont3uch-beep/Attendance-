@@ -3,133 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2k25 Pharm-D Portal</title>
+    <title>2k25 Pharm-D Attendance</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .dashboard, .student-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 6px solid #007bff; margin-bottom: 20px; }
-        .cr-info { font-weight: bold; color: #555; margin-bottom: 10px; }
-        #currentDateTime { background: #e9ecef; padding: 8px; border-radius: 8px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; font-size: 0.9rem; }
-        input { width: 90%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem; }
-        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
-        .export-btn { background: #2980b9; font-size: 0.9rem; }
-        .check-btn { background: #6f42c1; }
-        table { width: 100%; max-width: 500px; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
-        th { background: #343a40; color: white; }
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; z-index: 100; box-shadow: 0 0 30px rgba(0,0,0,0.3); width: 85%; max-width: 320px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50; }
-        .del-date { color: #e74c3c; cursor: pointer; margin-left: 15px; font-weight: bold; }
-        .student-result { margin-top: 15px; padding: 10px; border-radius: 8px; background: #f8f9fa; display: none; text-align: left; border-left: 4px solid #6f42c1; }
+        :root { --primary: #007bff; --success: #28a745; --dark: #343a40; --light: #f8f9fa; }
+        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
+        
+        /* Navigation Tabs */
+        .nav-tabs { display: flex; width: 100%; max-width: 450px; margin-bottom: 20px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .nav-tabs button { flex: 1; padding: 15px; border: none; background: none; font-weight: bold; cursor: pointer; transition: 0.3s; color: #666; }
+        .nav-tabs button.active { background: var(--primary); color: white; }
+
+        .container { display: none; width: 100%; max-width: 450px; animation: fadeIn 0.4s; }
+        .container.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
+        .header-title { color: var(--dark); margin: 0; font-size: 1.5rem; }
+        #currentDateTime { font-size: 0.85rem; color: #777; margin: 10px 0; }
+
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        button.main-btn { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        
+        .result-box { background: var(--light); padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; border-left: 5px solid var(--primary); display: none; }
+        
+        table { width: 100%; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        th { background: var(--dark); color: white; }
+
+        /* Modal Styles */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; z-index: 1000; width: 85%; max-width: 320px; box-shadow: 0 0 30px rgba(0,0,0,0.4); }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
     </style>
 </head>
 <body>
 
-    <div class="dashboard">
-        <h2>Admin Dashboard</h2>
-        <div class="cr-info">CR: Zuhaib Ali</div>
-        <div id="currentDateTime">Loading...</div>
-        
-        <input type="text" id="rollNumber" inputmode="numeric" placeholder="Enter Roll No for Today">
-        <button onclick="markAttendance()">Mark Present</button>
-        <button class="export-btn" onclick="downloadDailyCSV()">Download Today's List</button>
-        <button class="export-btn" style="background:#495057" onclick="downloadFullCSV()">Download Full Report</button>
+    <div class="nav-tabs">
+        <button id="btnStudent" class="active" onclick="showTab('student')">Student Portal</button>
+        <button id="btnAdmin" onclick="showTab('admin')">Admin (Zuhaib)</button>
     </div>
 
-    <div class="student-section">
-        <h3>Student Corner</h3>
-        <p style="font-size: 0.8rem; color: #666;">Check your attendance history</p>
-        <input type="text" id="checkRoll" inputmode="numeric" placeholder="Your Roll Number">
-        <button class="check-btn" onclick="studentCheck()">Check My Attendance</button>
-        
-        <div id="studentResult" class="student-result">
-            <strong>Roll No: <span id="resRoll"></span></strong><br>
-            Total Days: <span id="resTotal"></span><br>
-            <small>Dates: <span id="resDates"></span></small>
+    <div id="studentContainer" class="container active">
+        <div class="card">
+            <h2 class="header-title">Student Corner</h2>
+            <p style="color:#666">Check your 2k25 Pharm-D attendance</p>
+            <input type="text" id="checkRoll" inputmode="numeric" placeholder="Enter Your Roll Number">
+            <button class="main-btn" style="background:#6f42c1" onclick="studentCheck()">Search Records</button>
+            
+            <div id="studentResult" class="result-box">
+                <strong>Roll No: <span id="resRoll"></span></strong><br>
+                Total Presence: <b style="color:var(--primary)"><span id="resTotal"></span> Days</b><hr>
+                <small>Dates: <span id="resDates"></span></small>
+            </div>
         </div>
     </div>
 
-    <table id="mainTable">
-        <thead>
-            <tr>
-                <th>Roll No</th>
-                <th>Total</th>
-                <th>History</th>
-            </tr>
-        </thead>
-        <tbody id="attendanceBody"></tbody>
-    </table>
+    <div id="adminContainer" class="container">
+        <div class="card">
+            <h2 class="header-title">Admin Dashboard</h2>
+            <div id="currentDateTime"></div>
+            <input type="text" id="rollNumber" inputmode="numeric" placeholder="Roll Number to Mark">
+            <button class="main-btn" onclick="markAttendance()">Mark Today Present</button>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <button onclick="downloadDailyCSV()" style="flex:1; font-size:0.7rem; padding:8px; background:#17a2b8; color:white; border:none; border-radius:5px;">Today's List</button>
+                <button onclick="downloadFullCSV()" style="flex:1; font-size:0.7rem; padding:8px; background:#495057; color:white; border:none; border-radius:5px;">Full Report</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Total</th>
+                    <th>Manage</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceBody"></tbody>
+        </table>
+    </div>
 
     <div id="overlay" class="overlay" onclick="closeModal()"></div>
     <div id="modal" class="modal">
-        <h3 id="modalTitle">History</h3>
-        <div id="historyList" style="max-height: 250px; overflow-y: auto;"></div>
-        <button onclick="closeModal()" style="background:#dc3545; margin-top:15px; width: 100%; border:none; padding:10px; color:white; border-radius:5px;">Close</button>
+        <h3 id="modalTitle">Edit History</h3>
+        <div id="historyList" style="max-height: 250px; overflow-y: auto; font-size: 0.9rem;"></div>
+        <button onclick="closeModal()" style="background:#dc3545; color:white; border:none; width:100%; padding:10px; margin-top:15px; border-radius:5px;">Close</button>
     </div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('pharmD_FullDB')) || {};
 
+        function showTab(tab) {
+            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+            
+            if(tab === 'admin') {
+                const pass = prompt("Enter Admin Password:");
+                if(pass === "2k25") { // You can change this password
+                    document.getElementById('adminContainer').classList.add('active');
+                    document.getElementById('btnAdmin').classList.add('active');
+                    renderTable();
+                } else {
+                    alert("Wrong Password!");
+                    showTab('student');
+                }
+            } else {
+                document.getElementById('studentContainer').classList.add('active');
+                document.getElementById('btnStudent').classList.add('active');
+            }
+        }
+
         function updateClock() {
             const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('currentDateTime').innerText = now.toLocaleDateString('en-US', options) + " | " + now.toLocaleTimeString();
+            document.getElementById('currentDateTime').innerText = now.toLocaleDateString('en-GB', {weekday:'short', day:'2-digit', month:'short'}) + " | " + now.toLocaleTimeString();
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(updateClock, 1000); updateClock();
 
         function markAttendance() {
             const roll = document.getElementById('rollNumber').value.trim();
             const today = new Date().toLocaleDateString('en-GB');
-            if (!roll) return alert("Enter Roll Number");
+            if (!roll) return;
             if (!db[roll]) db[roll] = [];
-            if (db[roll].includes(today)) {
-                alert("Already marked for today!");
-            } else {
-                db[roll].push(today);
-                save();
-            }
+            if (db[roll].includes(today)) { alert("Already marked!"); } 
+            else { db[roll].push(today); save(); }
             document.getElementById('rollNumber').value = '';
         }
 
         function studentCheck() {
             const roll = document.getElementById('checkRoll').value.trim();
             const resDiv = document.getElementById('studentResult');
-            if (!db[roll]) {
-                alert("No record found for this Roll Number.");
-                resDiv.style.display = 'none';
-                return;
-            }
+            if (!db[roll]) { alert("No records found."); resDiv.style.display = 'none'; return; }
             document.getElementById('resRoll').innerText = roll;
             document.getElementById('resTotal').innerText = db[roll].length;
             document.getElementById('resDates').innerText = db[roll].join(", ");
             resDiv.style.display = 'block';
         }
 
-        function downloadDailyCSV() {
-            const today = new Date().toLocaleDateString('en-GB');
-            let csv = `Attendance for ${today}\nRoll Number,Status\n`;
-            Object.keys(db).forEach(roll => {
-                if (db[roll].includes(today)) csv += `${roll},Present\n`;
-            });
-            downloadFile(csv, `Attendance_${today.replace(/\//g, '-')}.csv`);
-        }
-
-        function downloadFullCSV() {
-            let csv = 'Roll Number,Total Attendance,Dates\n';
-            Object.keys(db).sort().forEach(roll => {
-                csv += `${roll},${db[roll].length},"${db[roll].join(" | ")}"\n`;
-            });
-            downloadFile(csv, 'Full_PharmD_Attendance.csv');
-        }
-
-        function downloadFile(content, fileName) {
-            const blob = new Blob([content], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            a.click();
-        }
+        function save() { localStorage.setItem('pharmD_FullDB', JSON.stringify(db)); renderTable(); }
 
         function renderTable() {
             const body = document.getElementById('attendanceBody');
@@ -138,41 +146,11 @@
                 body.innerHTML += `<tr>
                     <td><b>${roll}</b></td>
                     <td>${db[roll].length}</td>
-                    <td><button class="export-btn" style="padding:4px 8px; font-size:0.7rem;" onclick="viewHistory('${roll}')">Edit</button></td>
+                    <td><button onclick="viewHistory('${roll}')" style="background:#007bff; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem;">Edit</button></td>
                 </tr>`;
             });
         }
 
         function viewHistory(roll) {
             document.getElementById('modalTitle').innerText = "Roll: " + roll;
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-            db[roll].sort().reverse().forEach((date, index) => {
-                list.innerHTML += `<div style="padding:8px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">${date} <span class="del-date" onclick="deleteDate('${roll}', ${index})">✕</span></div>`;
-            });
-            document.getElementById('modal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-        }
-
-        function deleteDate(roll, index) {
-            if (confirm("Delete this date?")) {
-                db[roll].splice(index, 1);
-                save();
-                viewHistory(roll);
-            }
-        }
-
-        function save() {
-            localStorage.setItem('pharmD_FullDB', JSON.stringify(db));
-            renderTable();
-        }
-
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-        }
-
-        renderTable();
-    </script>
-</body>
-</html>
+            const list = document.
