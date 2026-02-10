@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <title>LUH Pharmacy Attendance</title>
@@ -6,29 +6,29 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
         h2 { color: #2c3e50; text-align: center; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        button { width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button:hover { background: #219150; }
+        .download-btn { background: #2980b9; }
         table { width: 100%; margin-top: 20px; border-collapse: collapse; background: white; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         th { background: #34495e; color: white; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>Student Attendance</h2>
-        <input type="text" id="studentName" placeholder="Enter Student Name">
-        <input type="text" id="rollNumber" placeholder="Enter Roll Number">
+        <h2>Pharmacy Attendance</h2>
+        <input type="text" id="rollNumber" placeholder="Enter Roll Number (e.g. 2026-01)">
         <button onclick="addAttendance()">Mark Present</button>
+        <button class="download-btn" onclick="downloadCSV()">Download Excel Report</button>
     </div>
 
     <table id="attendanceTable">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Roll No</th>
-                <th>Time</th>
+                <th>Roll Number</th>
+                <th>Time of Entry</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -36,24 +36,39 @@
 
     <script>
         function addAttendance() {
-            const name = document.getElementById('studentName').value;
             const roll = document.getElementById('rollNumber').value;
             const time = new Date().toLocaleTimeString();
 
-            if(name === '' || roll === '') {
-                alert("Please fill all fields");
+            if(roll === '') {
+                alert("Please enter your Roll Number");
                 return;
             }
 
             const tableBody = document.getElementById('tableBody');
-            const row = `<tr><td>${name}</td><td>${roll}</td><td>${time}</td></tr>`;
+            const row = `<tr><td><b>${roll}</b></td><td>${time}</td></tr>`;
             tableBody.innerHTML += row;
 
-            // Clear inputs
-            document.getElementById('studentName').value = '';
+            // Clear input for next student
             document.getElementById('rollNumber').value = '';
+        }
+
+        function downloadCSV() {
+            let csv = 'Roll Number,Time\n';
+            const rows = document.querySelectorAll("table tr");
+            
+            for (let i = 1; i < rows.length; i++) {
+                const cols = rows[i].querySelectorAll("td");
+                const rowData = Array.from(cols).map(col => col.innerText).join(",");
+                csv += rowData + "\n";
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'Pharmacy_Attendance.csv');
+            a.click();
         }
     </script>
 </body>
 </html>
-
