@@ -3,90 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacy Attendance Tracker</title>
+    <title>2k25 Pharm-D Attendance</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
-        h2 { color: #2c3e50; margin-bottom: 5px; }
-        p { color: #7f8c8d; font-size: 14px; margin-bottom: 20px; }
-        input { width: 90%; padding: 12px; margin-bottom: 15px; border: 2px solid #dfe6e9; border-radius: 8px; font-size: 16px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #3498db; }
-        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 5px solid #2c3e50; }
+        h2 { color: #2c3e50; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .cr-tag { background: #34495e; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 20px; }
+        input { width: 90%; padding: 12px; margin-bottom: 10px; border: 2px solid #dfe6e9; border-radius: 8px; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
         .download-btn { background: #2980b9; }
-        .reset-btn { background: #e74c3c; font-size: 12px; padding: 5px; width: auto; margin-top: 20px; }
-        table { width: 100%; max-width: 500px; margin-top: 30px; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        th, td { padding: 15px; text-align: center; border-bottom: 1px solid #eee; }
+        .search-box { width: 100%; max-width: 500px; margin: 20px 0; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+        table { width: 100%; max-width: 600px; margin-top: 10px; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
         th { background: #34495e; color: white; }
-        tr:hover { background: #f9f9f9; }
+        .edit-btn { background: #f39c12; padding: 5px 10px; font-size: 11px; width: auto; margin: 0; }
+        .delete-btn { background: #e74c3c; padding: 5px 10px; font-size: 11px; width: auto; margin: 0; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>Batch Attendance</h2>
-        <p>Pharmacy School - LUH</p>
+        <h2>2k25 Pharm-D</h2>
+        <div class="cr-tag">CR: Zuhaib Ali</div>
         <input type="text" id="rollNumber" placeholder="Enter Roll Number">
-        <button onclick="markAttendance()">Submit Attendance</button>
-        <button class="download-btn" onclick="downloadCSV()">Export to Excel</button>
+        <button onclick="markAttendance()">Mark Today's Attendance</button>
+        <button class="download-btn" onclick="downloadCSV()">Export Excel (CSV)</button>
     </div>
+
+    <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search Roll Number..." onkeyup="updateTable()">
 
     <table>
         <thead>
             <tr>
-                <th>Roll Number</th>
-                <th>Total Days Present</th>
-                <th>Last Entry Date</th>
+                <th>Roll No</th>
+                <th>Total Days</th>
+                <th>Last Date</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody id="attendanceBody"></tbody>
     </table>
 
-    <button class="reset-btn" onclick="clearAllData()">Reset Entire Registry</button>
-
     <script>
-        // Load data from LocalStorage on startup
-        let registry = JSON.parse(localStorage.getItem('pharmacyData')) || {};
+        let registry = JSON.parse(localStorage.getItem('pharm2k25Data')) || {};
 
         function updateTable() {
             const tableBody = document.getElementById('attendanceBody');
+            const filter = document.getElementById('searchBar').value.toLowerCase();
             tableBody.innerHTML = '';
             
             for (let roll in registry) {
-                const row = `<tr>
-                    <td><b>${roll}</b></td>
-                    <td>${registry[roll].count}</td>
-                    <td>${registry[roll].lastDate}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
+                if (roll.toLowerCase().includes(filter)) {
+                    const row = `<tr>
+                        <td><b>${roll}</b></td>
+                        <td>${registry[roll].count}</td>
+                        <td>${registry[roll].lastDate}</td>
+                        <td>
+                            <button class="edit-btn" onclick="editEntry('${roll}')">Edit</button>
+                            <button class="delete-btn" onclick="deleteEntry('${roll}')">Del</button>
+                        </td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                }
             }
         }
 
         function markAttendance() {
-            const rollInput = document.getElementById('rollNumber');
-            const roll = rollInput.value.trim();
-            const today = new Date().toLocaleDateString('en-GB'); // Format: DD/MM/YYYY
+            const roll = document.getElementById('rollNumber').value.trim();
+            const today = new Date().toLocaleDateString('en-GB'); 
 
-            if (roll === '') {
-                alert("Please enter a roll number");
-                return;
-            }
+            if (!roll) return alert("Enter Roll Number");
 
             if (!registry[roll]) {
-                // New Student
                 registry[roll] = { count: 1, lastDate: today };
             } else {
-                // Existing Student - check if already marked today
                 if (registry[roll].lastDate === today) {
-                    alert("Attendance already marked for this Roll Number today!");
+                    alert("Already marked for today!");
                 } else {
-                    registry[roll].count += 1;
+                    registry[roll].count++;
                     registry[roll].lastDate = today;
                 }
             }
+            saveAndRefresh();
+            document.getElementById('rollNumber').value = '';
+        }
 
-            localStorage.setItem('pharmacyData', JSON.stringify(registry));
+        function editEntry(roll) {
+            const newCount = prompt(`Update Total Attendance for ${roll}:`, registry[roll].count);
+            const newDate = prompt(`Update Last Date (DD/MM/YYYY) for ${roll}:`, registry[roll].lastDate);
+            
+            if (newCount !== null && newDate !== null) {
+                registry[roll].count = parseInt(newCount);
+                registry[roll].lastDate = newDate;
+                saveAndRefresh();
+            }
+        }
+
+        function deleteEntry(roll) {
+            if(confirm(`Delete all records for ${roll}?`)) {
+                delete registry[roll];
+                saveAndRefresh();
+            }
+        }
+
+        function saveAndRefresh() {
+            localStorage.setItem('pharm2k25Data', JSON.stringify(registry));
             updateTable();
-            rollInput.value = '';
         }
 
         function downloadCSV() {
@@ -97,20 +119,11 @@
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'Pharmacy_Monthly_Attendance.csv');
+            a.href = url;
+            a.download = '2k25_PharmD_Attendance.csv';
             a.click();
         }
 
-        function clearAllData() {
-            if(confirm("Are you sure you want to delete all records? This cannot be undone.")) {
-                localStorage.removeItem('pharmacyData');
-                registry = {};
-                updateTable();
-            }
-        }
-
-        // Initial table load
         updateTable();
     </script>
 </body>
