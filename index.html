@@ -8,25 +8,32 @@
         :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #343a40; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
         
+        /* Main Input Card */
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 6px solid var(--primary); margin-bottom: 20px; box-sizing: border-box; }
         .cr-tag { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 1.1rem; }
         #liveClock { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
 
         input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-group-top { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; }
         
-        .btn-mark { background: var(--success); grid-column: span 2; }
-        .btn-prev { background: #6c757d; }
-        .btn-dl { background: #17a2b8; }
-        .btn-reset { background: var(--danger); grid-column: span 2; margin-top: 10px; font-size: 0.8rem; opacity: 0.8; }
-        .btn-reset:hover { opacity: 1; }
+        .btn-mark { background: var(--success); grid-column: span 2; font-size: 1.1rem; }
+        .btn-prev { background: #6c757d; grid-column: span 2; }
         
+        /* Search and Table */
         .search-area { width: 100%; max-width: 450px; margin-bottom: 10px; }
-        table { width: 100%; max-width: 450px; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        table { width: 100%; max-width: 450px; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
         th { background: var(--dark); color: white; }
 
+        /* Bottom Control Panel */
+        .bottom-controls { width: 100%; max-width: 450px; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 30px; border: 1px dashed #ccc; }
+        .btn-group-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-dl { background: #17a2b8; grid-column: span 2; }
+        .btn-save { background: #495057; }
+        .btn-reset { background: var(--danger); }
+
+        /* Modal */
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; z-index: 1000; width: 85%; max-width: 320px; box-shadow: 0 0 30px rgba(0,0,0,0.4); }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
         .history-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
@@ -41,16 +48,14 @@
         
         <input type="text" id="rollInput" inputmode="numeric" placeholder="Enter Roll Number">
         
-        <div class="btn-group">
+        <div class="btn-group-top">
             <button class="btn-mark" onclick="markToday()">Mark Present Today</button>
-            <button class="btn-prev" onclick="markPrevious()">Previous Date</button>
-            <button class="btn-dl" onclick="downloadSpecificDate()">Download List</button>
-            <button class="btn-reset" onclick="resetAllData()">⚠️ Reset All History</button>
+            <button class="btn-prev" onclick="markPrevious()">Add Previous Date Entry</button>
         </div>
     </div>
 
     <div class="search-area">
-        <input type="text" id="tableSearch" placeholder="🔎 Search Student Roll No..." onkeyup="renderTable()">
+        <input type="text" id="tableSearch" placeholder="🔎 Search Students..." onkeyup="renderTable()">
     </div>
 
     <table>
@@ -58,15 +63,24 @@
             <tr>
                 <th>Roll No</th>
                 <th>Days</th>
-                <th>History</th>
+                <th>Manage</th>
             </tr>
         </thead>
         <tbody id="attendanceBody"></tbody>
     </table>
 
+    <div class="bottom-controls">
+        <h4 style="margin:0 0 10px 0; color:#555;">Data Management</h4>
+        <div class="btn-group-bottom">
+            <button class="btn-dl" onclick="downloadSpecificDate()">Download Specific Date CSV</button>
+            <button class="btn-save" onclick="manualSave()">Save Data</button>
+            <button class="btn-reset" onclick="resetAllData()">Reset History</button>
+        </div>
+    </div>
+
     <div id="overlay" class="overlay" onclick="closeModal()"></div>
     <div id="modal" class="modal">
-        <h3 id="modalTitle">Attendance Log</h3>
+        <h3 id="modalTitle">History</h3>
         <div id="historyList" style="max-height: 250px; overflow-y: auto;"></div>
         <button onclick="closeModal()" style="background:var(--dark); width:100%; padding:10px; margin-top:15px; border-radius:5px; color:white; border:none;">Close</button>
     </div>
@@ -89,7 +103,7 @@
         function markPrevious() {
             const roll = document.getElementById('rollInput').value.trim();
             if (!roll) return alert("Enter Roll Number first");
-            const date = prompt("Enter Date (DD/MM/YYYY):", "10/02/2026");
+            const date = prompt("Enter Date (DD/MM/YYYY):", "11/02/2026");
             if (date) processMark(roll, date);
         }
 
@@ -105,24 +119,27 @@
             document.getElementById('rollInput').value = '';
         }
 
+        function manualSave() {
+            save();
+            alert("All data saved to local storage!");
+        }
+
         function resetAllData() {
-            const confirmAction = prompt("This will DELETE ALL attendance records forever. Type 'RESET2026' to confirm:");
+            const confirmAction = prompt("Type 'RESET2026' to DELETE ALL records:");
             if (confirmAction === "RESET2026") {
                 db = {};
                 save();
-                alert("All history has been cleared.");
-            } else {
-                alert("Reset cancelled.");
+                alert("Database wiped.");
             }
         }
 
         function downloadSpecificDate() {
-            const date = prompt("Enter Date to download (DD/MM/YYYY):", new Date().toLocaleDateString('en-GB'));
+            const date = prompt("Which date to download? (DD/MM/YYYY):", new Date().toLocaleDateString('en-GB'));
             if (!date) return;
-            let csv = `Attendance for ${date}\nRoll Number,Status\n`;
+            let csv = `Roll Number\n`;
             let found = false;
             Object.keys(db).sort().forEach(roll => {
-                if (db[roll].includes(date)) { csv += `${roll},Present\n`; found = true; }
+                if (db[roll].includes(date)) { csv += `${roll}\n`; found = true; }
             });
             if (!found) return alert("No records for " + date);
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -140,7 +157,7 @@
                     body.innerHTML += `<tr>
                         <td><b>${roll}</b></td>
                         <td>${db[roll].length}</td>
-                        <td><button onclick="viewHistory('${roll}')" style="background:var(--primary); font-size:0.7rem; border:none; padding:5px 8px; border-radius:4px; color:white;">Edit</button></td>
+                        <td><button onclick="viewHistory('${roll}')" style="background:var(--primary); font-size:0.7rem; border:none; padding:5px 10px; border-radius:4px; color:white;">Edit</button></td>
                     </tr>`;
                 }
             });
@@ -150,28 +167,4 @@
             document.getElementById('modalTitle').innerText = "Roll: " + roll;
             const list = document.getElementById('historyList');
             list.innerHTML = '';
-            db[roll].sort().reverse().forEach((date, index) => {
-                list.innerHTML += `<div class="history-item">${date} <span style="color:red; cursor:pointer;" onclick="deleteDate('${roll}', ${index})">✕</span></div>`;
-            });
-            document.getElementById('modal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-        }
-
-        function deleteDate(roll, index) {
-            if(confirm("Remove this entry?")) { db[roll].splice(index, 1); save(); viewHistory(roll); }
-        }
-
-        function save() {
-            localStorage.setItem('pharmD_FullDB', JSON.stringify(db));
-            renderTable();
-        }
-
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-        }
-
-        renderTable();
-    </script>
-</body>
-</html>
+            db[roll].
