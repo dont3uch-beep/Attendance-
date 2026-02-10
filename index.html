@@ -2,98 +2,223 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharm-D 2k25 App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pharm-D CR</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Pharm-D CR">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PharmD-CR">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#007bff">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3449/3449692.png">
 
     <style>
-        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #343a40; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
+        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #212529; --light: #f8f9fa; }
         
-        /* App Shortcut Button - Only shows if not on home screen */
-        #installArea { width: 100%; max-width: 450px; background: #fff3cd; padding: 10px; border-radius: 10px; margin-bottom: 15px; text-align: center; border: 1px solid #ffeeba; display: none; }
-
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 6px solid var(--primary); margin-bottom: 20px; box-sizing: border-box; }
-        .cr-tag { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 1.1rem; }
-        #liveClock { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
-
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; }
-        .btn-group-top { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         
-        .btn-mark { background: var(--success); grid-column: span 2; font-size: 1.1rem; }
-        .btn-prev { background: #6c757d; grid-column: span 2; }
-        
-        table { width: 100%; max-width: 450px; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
-        th { background: var(--dark); color: white; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: #eef2f3; margin: 0; padding: env(safe-area-inset-top) 15px 15px 15px;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
 
-        .bottom-controls { width: 100%; max-width: 450px; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 30px; border: 1px dashed #ccc; }
-        .btn-group-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .btn-dl { background: #17a2b8; grid-column: span 2; }
-        .btn-reset { background: var(--danger); }
-        .btn-save { background: #495057; }
+        /* App Banner for Setup */
+        #installNotice {
+            background: #fff3cd; border: 1px solid #ffeeba; padding: 12px;
+            border-radius: 10px; margin-bottom: 15px; width: 100%; max-width: 450px;
+            font-size: 0.85rem; text-align: center; color: #856404; display: none;
+        }
 
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; z-index: 1000; width: 85%; max-width: 320px; box-shadow: 0 0 30px rgba(0,0,0,0.4); }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
-        .history-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .header-card { 
+            background: white; width: 100%; max-width: 450px; padding: 25px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            text-align: center; margin-top: 10px; border-bottom: 5px solid var(--primary);
+        }
+
+        .cr-title { color: var(--primary); font-weight: 800; font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 5px; }
+        #liveClock { font-size: 0.8rem; color: #888; margin-bottom: 20px; }
+
+        input { 
+            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee;
+            border-radius: 12px; font-size: 1.1rem; transition: 0.3s; outline: none;
+        }
+        input:focus { border-color: var(--primary); }
+
+        .main-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        button { 
+            padding: 15px; border: none; border-radius: 12px; font-weight: 700;
+            cursor: pointer; transition: transform 0.1s active; font-size: 0.95rem;
+        }
+        button:active { transform: scale(0.97); }
+
+        .btn-mark { background: var(--success); color: white; grid-column: span 2; font-size: 1.1rem; }
+        .btn-prev { background: #6c757d; color: white; grid-column: span 2; }
+
+        /* Table & Search */
+        .table-container { width: 100%; max-width: 450px; margin-top: 20px; }
+        .search-bar { background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        table { 
+            width: 100%; background: white; border-radius: 15px; overflow: hidden;
+            border-collapse: collapse; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        th { background: var(--dark); color: white; padding: 15px; font-size: 0.85rem; }
+        td { padding: 15px; text-align: center; border-bottom: 1px solid #f1f1f1; font-size: 1rem; }
+
+        /* Bottom Control Bar */
+        .footer-controls {
+            width: 100%; max-width: 450px; background: white; padding: 20px;
+            border-radius: 15px; margin-top: 25px; border: 1px solid #ddd;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .btn-dl { background: #17a2b8; color: white; grid-column: span 2; }
+        .btn-save { background: #495057; color: white; }
+        .btn-reset { background: var(--danger); color: white; }
+
+        /* History Modal */
+        .modal-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 100; backdrop-filter: blur(3px);
+        }
+        .modal { 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; width: 90%; max-width: 350px; padding: 25px;
+            border-radius: 20px; z-index: 101; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .hist-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-    <div id="installArea">
-        <small>To use as an App: Tap <b>three dots</b> or <b>Share icon</b> and select <b>'Add to Home Screen'</b></small>
+    <div id="installNotice">
+        📲 <b>Install App:</b> Tap the <b>Share</b> icon (iPhone) or <b>3-dots</b> (Android) then <b>"Add to Home Screen"</b>.
     </div>
 
-    <div class="card">
-        <div class="cr-tag">CR: Zuhaib Ali</div>
-        <h2 style="margin:5px 0;">Pharm-D 2k25</h2>
-        <div id="liveClock">Loading Date...</div>
+    <div class="header-card">
+        <div class="cr-title">CR: ZUHAIB ALI</div>
+        <h1 style="margin:0; font-size: 1.6rem;">Pharm-D 2k25</h1>
+        <div id="liveClock">Initializing...</div>
         
         <input type="text" id="rollInput" inputmode="numeric" placeholder="Enter Roll Number">
         
-        <div class="btn-group-top">
-            <button class="btn-mark" onclick="markToday()">Mark Present Today</button>
-            <button class="btn-prev" onclick="markPrevious()">Add Previous Date</button>
+        <div class="main-btns">
+            <button class="btn-mark" onclick="markToday()">Mark Today</button>
+            <button class="btn-prev" onclick="markPrevious()">Add Past Date</button>
         </div>
     </div>
 
-    <input type="text" id="tableSearch" placeholder="🔎 Search Students..." onkeyup="renderTable()" style="max-width:450px;">
-
-    <table>
-        <thead>
-            <tr><th>Roll No</th><th>Days</th><th>Manage</th></tr>
-        </thead>
-        <tbody id="attendanceBody"></tbody>
-    </table>
-
-    <div class="bottom-controls">
-        <div class="btn-group-bottom">
-            <button class="btn-dl" onclick="downloadSpecificDate()">Download CSV</button>
-            <button class="btn-save" onclick="manualSave()">Save Data</button>
-            <button class="btn-reset" onclick="resetAllData()">Reset History</button>
-        </div>
+    <div class="table-container">
+        <input type="text" id="search" class="search-bar" placeholder="🔍 Search Roll Number..." onkeyup="render()">
+        <table>
+            <thead>
+                <tr><th>Roll</th><th>Days</th><th>Action</th></tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
     </div>
 
-    <div id="overlay" class="overlay" onclick="closeModal()"></div>
+    <div class="footer-controls">
+        <button class="btn-dl" onclick="downloadCSV()">Download Daily CSV</button>
+        <button class="btn-save" onclick="saveData()">Manual Save</button>
+        <button class="btn-reset" onclick="resetAll()">Reset History</button>
+    </div>
+
+    <div id="overlay" class="modal-overlay" onclick="closeModal()"></div>
     <div id="modal" class="modal">
-        <h3 id="modalTitle">History</h3>
-        <div id="historyList" style="max-height: 250px; overflow-y: auto;"></div>
-        <button onclick="closeModal()" style="background:var(--dark); width:100%; padding:10px; margin-top:15px; border-radius:5px; color:white; border:none;">Close</button>
+        <h3 id="mTitle" style="margin-top:0">Roll History</h3>
+        <div id="hList" style="max-height: 250px; overflow-y: auto;"></div>
+        <button onclick="closeModal()" style="width:100%; margin-top:20px; background:var(--dark); color:white">Close</button>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('pharmD_FullDB')) || {};
+        let data = JSON.parse(localStorage.getItem('PHARM_DATA')) || {};
 
-        // Show installation helper if not already in standalone mode
+        // App installation notice logic
         if (!window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
-            document.getElementById('installArea').style.display = 'block';
+            document.getElementById('installNotice').style.display = 'block';
         }
 
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('liveClock').innerText = now.toLocaleDateString('en-GB', {weekday:'long',
+        function updateTime() {
+            const n = new Date();
+            document.getElementById('liveClock').innerText = n.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'short'}) + " | " + n.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        }
+        setInterval(updateTime, 1000); updateTime();
+
+        function markToday() {
+            const r = document.getElementById('rollInput').value.trim();
+            const d = new Date().toLocaleDateString('en-GB');
+            process(r, d);
+        }
+
+        function markPrevious() {
+            const r = document.getElementById('rollInput').value.trim();
+            if(!r) return alert("Enter Roll No");
+            const d = prompt("Enter Date (DD/MM/YYYY):", "11/02/2026");
+            if(d) process(r, d);
+        }
+
+        function process(r, d) {
+            if(!r) return;
+            if(!data[r]) data[r] = [];
+            if(data[r].includes(d)) return alert("Already marked!");
+            data[r].push(d);
+            save();
+            document.getElementById('rollInput').value = '';
+        }
+
+        function saveData() { save(); alert("Data Secured!"); }
+
+        function resetAll() {
+            if(prompt("Type 'RESET2026' to wipe data:") === "RESET2026") {
+                data = {}; save(); alert("Wiped Clean.");
+            }
+        }
+
+        function downloadCSV() {
+            const d = prompt("Download date? (DD/MM/YYYY):", new Date().toLocaleDateString('en-GB'));
+            if(!d) return;
+            let csv = "Present Students for " + d + "\nRoll Number\n";
+            let found = false;
+            Object.keys(data).sort().forEach(r => {
+                if(data[r].includes(d)) { csv += r + "\n"; found = true; }
+            });
+            if(!found) return alert("No one present on " + d);
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Attendance_${d.replace(/\//g,'-')}.csv`;
+            a.click();
+        }
+
+        function render() {
+            const box = document.getElementById('list');
+            const query = document.getElementById('search').value;
+            box.innerHTML = '';
+            Object.keys(data).sort((a,b)=>a-b).forEach(r => {
+                if(r.includes(query)) {
+                    box.innerHTML += `<tr>
+                        <td><b>${r}</b></td>
+                        <td>${data[r].length}</td>
+                        <td><button onclick="view('${r}')" style="background:var(--primary); color:white; padding:5px 12px; font-size:0.8rem">View</button></td>
+                    </tr>`;
+                }
+            });
+        }
+
+        function view(r) {
+            document.getElementById('mTitle').innerText = "History: " + r;
+            const hBox = document.getElementById('hList');
+            hBox.innerHTML = '';
+            data[r].sort().reverse().forEach((date, i) => {
+                hBox.innerHTML += `<div class="hist-row">${date} <span style="color:red" onclick="delEntry('${r}', ${i})">Delete</span></div>`;
+            });
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function delEntry(r, i) {
+            if(confirm("Delete this day?")) { data[r].splice(i, 1); save(); view(r); }
+        }
+
+        function save() { localStorage.setItem('PHARM_DATA', JSON.stringify(data)); render(); }
