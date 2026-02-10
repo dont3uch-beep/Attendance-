@@ -167,4 +167,28 @@
             document.getElementById('modalTitle').innerText = "Roll: " + roll;
             const list = document.getElementById('historyList');
             list.innerHTML = '';
-            db[roll].
+            db[roll].sort().reverse().forEach((date, index) => {
+                list.innerHTML += `<div class="history-item">${date} <span style="color:red; cursor:pointer;" onclick="deleteDate('${roll}', ${index})">✕</span></div>`;
+            });
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function deleteDate(roll, index) {
+            if(confirm("Remove this entry?")) { db[roll].splice(index, 1); save(); viewHistory(roll); }
+        }
+
+        function save() {
+            localStorage.setItem('pharmD_FullDB', JSON.stringify(db));
+            renderTable();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        renderTable();
+    </script>
+</body>
+</html>
