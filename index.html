@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharm-D 2k25 | Attendance System</title>
+    <title>Pharm-D 2k25 | CR Portal</title>
     <style>
-        :root { --primary: #007bff; --success: #28a745; --dark: #343a40; --bg: #f4f7f6; }
+        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #343a40; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
         
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 6px solid var(--primary); margin-bottom: 20px; box-sizing: border-box; }
@@ -15,16 +15,18 @@
         input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; }
+        
         .btn-mark { background: var(--success); grid-column: span 2; }
         .btn-prev { background: #6c757d; }
         .btn-dl { background: #17a2b8; }
+        .btn-reset { background: var(--danger); grid-column: span 2; margin-top: 10px; font-size: 0.8rem; opacity: 0.8; }
+        .btn-reset:hover { opacity: 1; }
         
         .search-area { width: 100%; max-width: 450px; margin-bottom: 10px; }
         table { width: 100%; max-width: 450px; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
         th { background: var(--dark); color: white; }
 
-        /* Modal */
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; z-index: 1000; width: 85%; max-width: 320px; box-shadow: 0 0 30px rgba(0,0,0,0.4); }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
         .history-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
@@ -43,11 +45,12 @@
             <button class="btn-mark" onclick="markToday()">Mark Present Today</button>
             <button class="btn-prev" onclick="markPrevious()">Previous Date</button>
             <button class="btn-dl" onclick="downloadSpecificDate()">Download List</button>
+            <button class="btn-reset" onclick="resetAllData()">⚠️ Reset All History</button>
         </div>
     </div>
 
     <div class="search-area">
-        <input type="text" id="tableSearch" placeholder="🔎 Search Students..." onkeyup="renderTable()">
+        <input type="text" id="tableSearch" placeholder="🔎 Search Student Roll No..." onkeyup="renderTable()">
     </div>
 
     <table>
@@ -65,7 +68,7 @@
     <div id="modal" class="modal">
         <h3 id="modalTitle">Attendance Log</h3>
         <div id="historyList" style="max-height: 250px; overflow-y: auto;"></div>
-        <button onclick="closeModal()" style="background:#dc3545; width:100%; padding:10px; margin-top:15px; border-radius:5px;">Close</button>
+        <button onclick="closeModal()" style="background:var(--dark); width:100%; padding:10px; margin-top:15px; border-radius:5px; color:white; border:none;">Close</button>
     </div>
 
     <script>
@@ -102,40 +105,42 @@
             document.getElementById('rollInput').value = '';
         }
 
+        function resetAllData() {
+            const confirmAction = prompt("This will DELETE ALL attendance records forever. Type 'RESET2026' to confirm:");
+            if (confirmAction === "RESET2026") {
+                db = {};
+                save();
+                alert("All history has been cleared.");
+            } else {
+                alert("Reset cancelled.");
+            }
+        }
+
         function downloadSpecificDate() {
             const date = prompt("Enter Date to download (DD/MM/YYYY):", new Date().toLocaleDateString('en-GB'));
             if (!date) return;
-            
             let csv = `Attendance for ${date}\nRoll Number,Status\n`;
             let found = false;
             Object.keys(db).sort().forEach(roll => {
-                if (db[roll].includes(date)) {
-                    csv += `${roll},Present\n`;
-                    found = true;
-                }
+                if (db[roll].includes(date)) { csv += `${roll},Present\n`; found = true; }
             });
-
-            if (!found) return alert("No records found for " + date);
-            
+            if (!found) return alert("No records for " + date);
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `Attendance_${date.replace(/\//g, '-')}.csv`;
-            a.click();
+            a.href = url; a.download = `Attendance_${date.replace(/\//g, '-')}.csv`; a.click();
         }
 
         function renderTable() {
             const body = document.getElementById('attendanceBody');
             const filter = document.getElementById('tableSearch').value;
             body.innerHTML = '';
-            
             Object.keys(db).sort((a,b)=>a-b).forEach(roll => {
                 if (roll.includes(filter)) {
                     body.innerHTML += `<tr>
                         <td><b>${roll}</b></td>
                         <td>${db[roll].length}</td>
-                        <td><button onclick="viewHistory('${roll}')" style="background:var(--primary); font-size:0.7rem; border:none; padding:5px; border-radius:4px;">Edit</button></td>
+                        <td><button onclick="viewHistory('${roll}')" style="background:var(--primary); font-size:0.7rem; border:none; padding:5px 8px; border-radius:4px; color:white;">Edit</button></td>
                     </tr>`;
                 }
             });
