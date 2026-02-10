@@ -3,37 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2k25 Pharm-D Attendance Portal</title>
+    <title>2k25 Pharm-D Portal</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 5px solid #007bff; }
-        .cr-tag { background: #007bff; color: white; padding: 5px 15px; border-radius: 20px; font-size: 13px; margin-bottom: 20px; display: inline-block; }
-        input { width: 90%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 8px; }
-        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 5px; }
-        .view-btn { background: #17a2b8; font-size: 12px; width: auto; padding: 5px 10px; }
-        .delete-date { color: red; cursor: pointer; font-weight: bold; margin-left: 10px; }
-        table { width: 100%; max-width: 600px; margin-top: 20px; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .dashboard { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 6px solid #007bff; }
+        .cr-info { font-weight: bold; color: #555; margin-bottom: 10px; }
+        #currentDateTime { background: #e9ecef; padding: 8px; border-radius: 8px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; font-size: 0.9rem; }
+        input { width: 90%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .search-container { width: 100%; max-width: 450px; margin: 20px 0; }
+        #searchBar { border-color: #007bff; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="grey" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 95% center; }
+        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .hist-btn { background: #17a2b8; width: auto; padding: 4px 8px; font-size: 0.8rem; }
+        table { width: 100%; max-width: 500px; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
         th { background: #343a40; color: white; }
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); border-radius: 10px; z-index: 100; width: 300px; max-height: 80vh; overflow-y: auto; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; z-index: 100; box-shadow: 0 0 30px rgba(0,0,0,0.3); width: 85%; max-width: 320px; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50; }
+        .del-date { color: #e74c3c; cursor: pointer; margin-left: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="card">
+    <div class="dashboard">
         <h2>2k25 Pharm-D</h2>
-        <div class="cr-tag">CR: Zuhaib Ali</div>
-        <input type="text" id="rollNumber" placeholder="Enter Roll Number">
-        <button onclick="markAttendance()">Mark Present (Today)</button>
-        <button style="background:#6c757d" onclick="manualDateEntry()">Add Previous Date</button>
+        <div class="cr-info">CR: Zuhaib Ali</div>
+        <div id="currentDateTime">Loading Date...</div>
+        
+        <input type="text" id="rollNumber" placeholder="Enter Roll Number (Today)">
+        <button onclick="markAttendance()">Mark Present</button>
+        <button style="background:#6c757d" onclick="manualEntry()">Add Previous Date</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchBar" placeholder="🔎 Search Roll Number..." onkeyup="renderTable()">
     </div>
 
     <table id="mainTable">
         <thead>
             <tr>
                 <th>Roll No</th>
-                <th>Total Days</th>
+                <th>Total</th>
                 <th>History</th>
             </tr>
         </thead>
@@ -42,51 +51,75 @@
 
     <div id="overlay" class="overlay" onclick="closeModal()"></div>
     <div id="modal" class="modal">
-        <h3>Attendance History</h3>
-        <div id="historyList"></div>
-        <button onclick="closeModal()" style="background:#dc3545; margin-top:10px">Close</button>
+        <h3 id="modalTitle">History</h3>
+        <div id="historyList" style="max-height: 250px; overflow-y: auto;"></div>
+        <button onclick="closeModal()" style="background:#dc3545; margin-top:15px">Close</button>
     </div>
 
     <script>
-        // Data structure: { "Roll1": ["11/02/2026", "10/02/2026"], "Roll2": [...] }
         let db = JSON.parse(localStorage.getItem('pharmD_FullDB')) || {};
 
+        function updateClock() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDateTime').innerText = now.toLocaleDateString('en-US', options) + " | " + now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
         function markAttendance(customDate = null) {
-            const roll = document.getElementById('rollNumber').value.trim();
+            const rollInput = document.getElementById('rollNumber');
+            const roll = rollInput.value.trim();
             const date = customDate || new Date().toLocaleDateString('en-GB');
 
-            if (!roll) return alert("Enter Roll Number");
+            if (!roll) return alert("Please enter a roll number");
 
             if (!db[roll]) db[roll] = [];
-            
             if (db[roll].includes(date)) {
-                alert("Already marked for " + date);
+                alert("Roll " + roll + " already marked for " + date);
             } else {
                 db[roll].push(date);
                 save();
             }
-            document.getElementById('rollNumber').value = '';
+            rollInput.value = '';
         }
 
-        function manualDateEntry() {
+        function manualEntry() {
             const roll = document.getElementById('rollNumber').value.trim();
-            if (!roll) return alert("Enter Roll Number first");
-            const date = prompt("Enter Date (DD/MM/YYYY):", "10/02/2026");
+            if (!roll) return alert("Enter Roll No first");
+            const date = prompt("Enter Date (DD/MM/YYYY):", "11/02/2026");
             if (date) markAttendance(date);
         }
 
+        function renderTable() {
+            const body = document.getElementById('attendanceBody');
+            const filter = document.getElementById('searchBar').value.toLowerCase();
+            body.innerHTML = '';
+            
+            Object.keys(db).sort().forEach(roll => {
+                if (roll.toLowerCase().includes(filter)) {
+                    body.innerHTML += `<tr>
+                        <td><b>${roll}</b></td>
+                        <td>${db[roll].length}</td>
+                        <td><button class="hist-btn" onclick="viewHistory('${roll}')">View/Edit</button></td>
+                    </tr>`;
+                }
+            });
+        }
+
         function viewHistory(roll) {
+            document.getElementById('modalTitle').innerText = "Roll: " + roll;
             const list = document.getElementById('historyList');
-            list.innerHTML = `<h4>Roll: ${roll}</h4>`;
+            list.innerHTML = '';
             db[roll].sort().reverse().forEach((date, index) => {
-                list.innerHTML += `<div>${date} <span class="delete-date" onclick="deleteDate('${roll}', ${index})">[X]</span></div>`;
+                list.innerHTML += `<div style="padding:8px; border-bottom:1px solid #eee">${date} <span class="del-date" onclick="deleteDate('${roll}', ${index})">✕</span></div>`;
             });
             document.getElementById('modal').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
         }
 
         function deleteDate(roll, index) {
-            if (confirm("Remove this date?")) {
+            if (confirm("Delete this date?")) {
                 db[roll].splice(index, 1);
                 save();
                 viewHistory(roll);
@@ -96,18 +129,6 @@
         function save() {
             localStorage.setItem('pharmD_FullDB', JSON.stringify(db));
             renderTable();
-        }
-
-        function renderTable() {
-            const body = document.getElementById('attendanceBody');
-            body.innerHTML = '';
-            for (let roll in db) {
-                body.innerHTML += `<tr>
-                    <td><b>${roll}</b></td>
-                    <td>${db[roll].length}</td>
-                    <td><button class="view-btn" onclick="viewHistory('${roll}')">View/Edit Days</button></td>
-                </tr>`;
-            }
         }
 
         function closeModal() {
