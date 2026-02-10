@@ -3,154 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2k25 Pharm-D Attendance</title>
+    <title>Pharm-D 2k25 | Attendance System</title>
     <style>
-        :root { --primary: #007bff; --success: #28a745; --dark: #343a40; --light: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
+        :root { --primary: #007bff; --success: #28a745; --dark: #343a40; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
         
-        /* Navigation Tabs */
-        .nav-tabs { display: flex; width: 100%; max-width: 450px; margin-bottom: 20px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .nav-tabs button { flex: 1; padding: 15px; border: none; background: none; font-weight: bold; cursor: pointer; transition: 0.3s; color: #666; }
-        .nav-tabs button.active { background: var(--primary); color: white; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 6px solid var(--primary); margin-bottom: 20px; box-sizing: border-box; }
+        .cr-tag { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 1.1rem; }
+        #liveClock { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
 
-        .container { display: none; width: 100%; max-width: 450px; animation: fadeIn 0.4s; }
-        .container.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
-        .header-title { color: var(--dark); margin: 0; font-size: 1.5rem; }
-        #currentDateTime { font-size: 0.85rem; color: #777; margin: 10px 0; }
-
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        button.main-btn { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; }
+        .btn-mark { background: var(--success); grid-column: span 2; }
+        .btn-prev { background: #6c757d; }
+        .btn-dl { background: #17a2b8; }
         
-        .result-box { background: var(--light); padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; border-left: 5px solid var(--primary); display: none; }
-        
-        table { width: 100%; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .search-area { width: 100%; max-width: 450px; margin-bottom: 10px; }
+        table { width: 100%; max-width: 450px; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
         th { background: var(--dark); color: white; }
 
-        /* Modal Styles */
+        /* Modal */
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; z-index: 1000; width: 85%; max-width: 320px; box-shadow: 0 0 30px rgba(0,0,0,0.4); }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-    <div class="nav-tabs">
-        <button id="btnStudent" class="active" onclick="showTab('student')">Student Portal</button>
-        <button id="btnAdmin" onclick="showTab('admin')">Admin (Zuhaib)</button>
-    </div>
-
-    <div id="studentContainer" class="container active">
-        <div class="card">
-            <h2 class="header-title">Student Corner</h2>
-            <p style="color:#666">Check your 2k25 Pharm-D attendance</p>
-            <input type="text" id="checkRoll" inputmode="numeric" placeholder="Enter Your Roll Number">
-            <button class="main-btn" style="background:#6f42c1" onclick="studentCheck()">Search Records</button>
-            
-            <div id="studentResult" class="result-box">
-                <strong>Roll No: <span id="resRoll"></span></strong><br>
-                Total Presence: <b style="color:var(--primary)"><span id="resTotal"></span> Days</b><hr>
-                <small>Dates: <span id="resDates"></span></small>
-            </div>
+    <div class="card">
+        <div class="cr-tag">CR: Zuhaib Ali</div>
+        <h2 style="margin:5px 0;">Pharm-D 2k25</h2>
+        <div id="liveClock">Loading Date...</div>
+        
+        <input type="text" id="rollInput" inputmode="numeric" placeholder="Enter Roll Number">
+        
+        <div class="btn-group">
+            <button class="btn-mark" onclick="markToday()">Mark Present Today</button>
+            <button class="btn-prev" onclick="markPrevious()">Previous Date</button>
+            <button class="btn-dl" onclick="downloadSpecificDate()">Download List</button>
         </div>
     </div>
 
-    <div id="adminContainer" class="container">
-        <div class="card">
-            <h2 class="header-title">Admin Dashboard</h2>
-            <div id="currentDateTime"></div>
-            <input type="text" id="rollNumber" inputmode="numeric" placeholder="Roll Number to Mark">
-            <button class="main-btn" onclick="markAttendance()">Mark Today Present</button>
-            <div style="display: flex; gap: 5px; margin-top: 10px;">
-                <button onclick="downloadDailyCSV()" style="flex:1; font-size:0.7rem; padding:8px; background:#17a2b8; color:white; border:none; border-radius:5px;">Today's List</button>
-                <button onclick="downloadFullCSV()" style="flex:1; font-size:0.7rem; padding:8px; background:#495057; color:white; border:none; border-radius:5px;">Full Report</button>
-            </div>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Roll No</th>
-                    <th>Total</th>
-                    <th>Manage</th>
-                </tr>
-            </thead>
-            <tbody id="attendanceBody"></tbody>
-        </table>
+    <div class="search-area">
+        <input type="text" id="tableSearch" placeholder="🔎 Search Students..." onkeyup="renderTable()">
     </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Roll No</th>
+                <th>Days</th>
+                <th>History</th>
+            </tr>
+        </thead>
+        <tbody id="attendanceBody"></tbody>
+    </table>
 
     <div id="overlay" class="overlay" onclick="closeModal()"></div>
     <div id="modal" class="modal">
-        <h3 id="modalTitle">Edit History</h3>
-        <div id="historyList" style="max-height: 250px; overflow-y: auto; font-size: 0.9rem;"></div>
-        <button onclick="closeModal()" style="background:#dc3545; color:white; border:none; width:100%; padding:10px; margin-top:15px; border-radius:5px;">Close</button>
+        <h3 id="modalTitle">Attendance Log</h3>
+        <div id="historyList" style="max-height: 250px; overflow-y: auto;"></div>
+        <button onclick="closeModal()" style="background:#dc3545; width:100%; padding:10px; margin-top:15px; border-radius:5px;">Close</button>
     </div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('pharmD_FullDB')) || {};
 
-        function showTab(tab) {
-            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
-            
-            if(tab === 'admin') {
-                const pass = prompt("Enter Admin Password:");
-                if(pass === "2k25") { // You can change this password
-                    document.getElementById('adminContainer').classList.add('active');
-                    document.getElementById('btnAdmin').classList.add('active');
-                    renderTable();
-                } else {
-                    alert("Wrong Password!");
-                    showTab('student');
-                }
-            } else {
-                document.getElementById('studentContainer').classList.add('active');
-                document.getElementById('btnStudent').classList.add('active');
-            }
-        }
-
         function updateClock() {
             const now = new Date();
-            document.getElementById('currentDateTime').innerText = now.toLocaleDateString('en-GB', {weekday:'short', day:'2-digit', month:'short'}) + " | " + now.toLocaleTimeString();
+            document.getElementById('liveClock').innerText = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'short', year:'numeric'}) + " | " + now.toLocaleTimeString();
         }
         setInterval(updateClock, 1000); updateClock();
 
-        function markAttendance() {
-            const roll = document.getElementById('rollNumber').value.trim();
-            const today = new Date().toLocaleDateString('en-GB');
-            if (!roll) return;
+        function markToday() {
+            const roll = document.getElementById('rollInput').value.trim();
+            const date = new Date().toLocaleDateString('en-GB');
+            processMark(roll, date);
+        }
+
+        function markPrevious() {
+            const roll = document.getElementById('rollInput').value.trim();
+            if (!roll) return alert("Enter Roll Number first");
+            const date = prompt("Enter Date (DD/MM/YYYY):", "10/02/2026");
+            if (date) processMark(roll, date);
+        }
+
+        function processMark(roll, date) {
+            if (!roll) return alert("Please enter a roll number");
             if (!db[roll]) db[roll] = [];
-            if (db[roll].includes(today)) { alert("Already marked!"); } 
-            else { db[roll].push(today); save(); }
-            document.getElementById('rollNumber').value = '';
+            if (db[roll].includes(date)) {
+                alert(`Roll ${roll} already marked for ${date}`);
+            } else {
+                db[roll].push(date);
+                save();
+            }
+            document.getElementById('rollInput').value = '';
         }
 
-        function studentCheck() {
-            const roll = document.getElementById('checkRoll').value.trim();
-            const resDiv = document.getElementById('studentResult');
-            if (!db[roll]) { alert("No records found."); resDiv.style.display = 'none'; return; }
-            document.getElementById('resRoll').innerText = roll;
-            document.getElementById('resTotal').innerText = db[roll].length;
-            document.getElementById('resDates').innerText = db[roll].join(", ");
-            resDiv.style.display = 'block';
-        }
+        function downloadSpecificDate() {
+            const date = prompt("Enter Date to download (DD/MM/YYYY):", new Date().toLocaleDateString('en-GB'));
+            if (!date) return;
+            
+            let csv = `Attendance for ${date}\nRoll Number,Status\n`;
+            let found = false;
+            Object.keys(db).sort().forEach(roll => {
+                if (db[roll].includes(date)) {
+                    csv += `${roll},Present\n`;
+                    found = true;
+                }
+            });
 
-        function save() { localStorage.setItem('pharmD_FullDB', JSON.stringify(db)); renderTable(); }
+            if (!found) return alert("No records found for " + date);
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Attendance_${date.replace(/\//g, '-')}.csv`;
+            a.click();
+        }
 
         function renderTable() {
             const body = document.getElementById('attendanceBody');
+            const filter = document.getElementById('tableSearch').value;
             body.innerHTML = '';
+            
             Object.keys(db).sort((a,b)=>a-b).forEach(roll => {
-                body.innerHTML += `<tr>
-                    <td><b>${roll}</b></td>
-                    <td>${db[roll].length}</td>
-                    <td><button onclick="viewHistory('${roll}')" style="background:#007bff; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem;">Edit</button></td>
-                </tr>`;
+                if (roll.includes(filter)) {
+                    body.innerHTML += `<tr>
+                        <td><b>${roll}</b></td>
+                        <td>${db[roll].length}</td>
+                        <td><button onclick="viewHistory('${roll}')" style="background:var(--primary); font-size:0.7rem; border:none; padding:5px; border-radius:4px;">Edit</button></td>
+                    </tr>`;
+                }
             });
         }
 
         function viewHistory(roll) {
             document.getElementById('modalTitle').innerText = "Roll: " + roll;
-            const list = document.
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+            db[roll].sort().reverse().forEach((date, index) => {
+                list.innerHTML += `<div class="history-item">${date} <span style="color:red; cursor:pointer;" onclick="deleteDate('${roll}', ${index})">✕</span></div>`;
+            });
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function deleteDate(roll, index) {
+            if(confirm("Remove this entry?")) { db[roll].splice(index, 1); save(); viewHistory(roll); }
+        }
+
+        function save() {
+            localStorage.setItem('pharmD_FullDB', JSON.stringify(db));
+            renderTable();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        renderTable();
+    </script>
+</body>
+</html>
