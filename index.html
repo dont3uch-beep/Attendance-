@@ -9,11 +9,12 @@
         .dashboard { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; border-top: 6px solid #007bff; }
         .cr-info { font-weight: bold; color: #555; margin-bottom: 10px; }
         #currentDateTime { background: #e9ecef; padding: 8px; border-radius: 8px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; font-size: 0.9rem; }
-        input { width: 90%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        /* Numeric Input Styling */
+        input { width: 90%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem; }
         .search-container { width: 100%; max-width: 450px; margin: 20px 0; }
-        #searchBar { border-color: #007bff; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="grey" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 95% center; }
+        #searchBar { border-color: #007bff; }
         button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
-        .hist-btn { background: #17a2b8; width: auto; padding: 4px 8px; font-size: 0.8rem; }
+        .hist-btn { background: #17a2b8; width: auto; padding: 4px 8px; font-size: 0.8rem; border-radius: 4px; color: white; border: none; }
         table { width: 100%; max-width: 500px; background: white; border-radius: 10px; overflow: hidden; border-collapse: collapse; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
         th { background: #343a40; color: white; }
@@ -29,13 +30,14 @@
         <div class="cr-info">CR: Zuhaib Ali</div>
         <div id="currentDateTime">Loading Date...</div>
         
-        <input type="text" id="rollNumber" placeholder="Enter Roll Number (Today)">
+        <input type="text" id="rollNumber" inputmode="numeric" pattern="[0-9]*" placeholder="Enter Roll Number">
+        
         <button onclick="markAttendance()">Mark Present</button>
         <button style="background:#6c757d" onclick="manualEntry()">Add Previous Date</button>
     </div>
 
     <div class="search-container">
-        <input type="text" id="searchBar" placeholder="🔎 Search Roll Number..." onkeyup="renderTable()">
+        <input type="text" id="searchBar" inputmode="numeric" placeholder="🔎 Search Roll Number..." onkeyup="renderTable()">
     </div>
 
     <table id="mainTable">
@@ -53,7 +55,7 @@
     <div id="modal" class="modal">
         <h3 id="modalTitle">History</h3>
         <div id="historyList" style="max-height: 250px; overflow-y: auto;"></div>
-        <button onclick="closeModal()" style="background:#dc3545; margin-top:15px">Close</button>
+        <button onclick="closeModal()" style="background:#dc3545; margin-top:15px; width: 100%; padding: 10px; color: white; border: none; border-radius: 5px;">Close</button>
     </div>
 
     <script>
@@ -76,7 +78,7 @@
 
             if (!db[roll]) db[roll] = [];
             if (db[roll].includes(date)) {
-                alert("Roll " + roll + " already marked for " + date);
+                alert("Roll " + roll + " already marked for today!");
             } else {
                 db[roll].push(date);
                 save();
@@ -87,7 +89,7 @@
         function manualEntry() {
             const roll = document.getElementById('rollNumber').value.trim();
             if (!roll) return alert("Enter Roll No first");
-            const date = prompt("Enter Date (DD/MM/YYYY):", "11/02/2026");
+            const date = prompt("Enter Date (DD/MM/YYYY):", new Date().toLocaleDateString('en-GB'));
             if (date) markAttendance(date);
         }
 
@@ -96,7 +98,8 @@
             const filter = document.getElementById('searchBar').value.toLowerCase();
             body.innerHTML = '';
             
-            Object.keys(db).sort().forEach(roll => {
+            // Sorting roll numbers numerically
+            Object.keys(db).sort((a, b) => a - b).forEach(roll => {
                 if (roll.toLowerCase().includes(filter)) {
                     body.innerHTML += `<tr>
                         <td><b>${roll}</b></td>
@@ -112,31 +115,4 @@
             const list = document.getElementById('historyList');
             list.innerHTML = '';
             db[roll].sort().reverse().forEach((date, index) => {
-                list.innerHTML += `<div style="padding:8px; border-bottom:1px solid #eee">${date} <span class="del-date" onclick="deleteDate('${roll}', ${index})">✕</span></div>`;
-            });
-            document.getElementById('modal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-        }
-
-        function deleteDate(roll, index) {
-            if (confirm("Delete this date?")) {
-                db[roll].splice(index, 1);
-                save();
-                viewHistory(roll);
-            }
-        }
-
-        function save() {
-            localStorage.setItem('pharmD_FullDB', JSON.stringify(db));
-            renderTable();
-        }
-
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-        }
-
-        renderTable();
-    </script>
-</body>
-</html>
+                list.innerHTML += `<div style="padding:8px; border-bottom:1px solid #eee; display: flex; justify-content
